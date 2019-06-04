@@ -1,19 +1,21 @@
 <?php
-define('ONLINETOURS_RU','https://www.onlinetours.ru/affiliates/feed');
-define('USERAGENT',$_SERVER ["HTTP_USER_AGENT"]);
-define('ACCEPT_ENC',$_SERVER ["HTTP_ACCEPT_ENCODING"]);
-define('HEADER',array( 'Expect:','Connection: Keep-Alive','Accept-Charset: utf-8,windows-1251;q=0.7,*;q=0.7' ));
-define('EU',array('Турция', 'Болгария', 'Италия', 'Испания', 'Греция', 'Кипр',
-    'Черногория', 'Чехия', 'Франция', 'Израиль', 'Грузия', 'Хорватия', 'Абхазия',
-    'Мальта', 'Армения', 'Венгрия', 'Андорра', 'Бельгия', 'Нидерланды', 'Дания',
-    'Швеция', 'Финляндия', 'Норвегия', 'Германия', 'Великобритания', 'Исландия',
-    'Португалия', 'Сербия', 'Швейцария', 'Словакия', 'Польша', 'Румыния',
-    'Эстония', 'Латвия', 'Литва', 'Словения', 'Австрия', 'Ирландиz', 'Азербайджан'));
-define('CAPITALS',array("Москва","Санкт-Петербург"));
-define('P_MARKER', '?advert=326&sub_id=926016');
-define('PROTOCOL','http:');
-//https://pixabay.com/api/?key=12683849-ab4c8a4c2f15229f7685ee3d7&q=travel+beach&image_type=photo&pretty=true&lang=ru api for pic
-
+require_once 'globals.php';
+require_once 'vkgroup.php';
+require_once 'oauth.php';
+session_start(); // Токен будем хранить в сессии
+// Формируем ссылку для авторизации
+$params = array(
+	'client_id'     => CLIENT_ID,
+	'redirect_uri'  => REDIRECT_URI,
+	'response_type' => 'code',
+	'v'             => VERSION, // (обязательный параметр) версия API, которую Вы используете https://vk.com/dev/versions
+ 
+	// Права доступа приложения https://vk.com/dev/permissions
+	// Если указать "offline", полученный access_token будет "вечным" (токен умрёт, если пользователь сменит свой пароль или удалит приложение).
+	// Если не указать "offline", то полученный токен будет жить 12 часов.
+	'scope'         => 'photos,offline',
+);
+echo '<a href="http://oauth.vk.com/authorize?' . http_build_query( $params ) . '">Авторизация через ВКонтакте</a>';
 $offers = array();
 /*
  *   ЧИТАЕМ FEED
@@ -53,9 +55,12 @@ endforeach;
 
 foreach ($offers as $offer):
     echo '<br>';
+   
     echo $offer->country.' '.$offer->depart. ' - '.$offer->cityArr;
     echo '<br>'; 
     echo $offer->price. ' '. $offer->currency;
+    echo '<br>';
+    echo getImageFileName($offer->picUrl);
     echo '<br>';
     echo "<img src=". $offer->picUrl. " width =\"640\" height=\"480\">";
     echo '<br>';
