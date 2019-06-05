@@ -8,6 +8,7 @@
 require_once 'globals.php';
 
 if(isset($_GET['code'])):
+    session_start();
     $params = array(
 		'client_id'     => CLIENT_ID,
 		'client_secret' => CLIENT_SECRET,
@@ -34,8 +35,7 @@ if(isset($_GET['code'])):
  
 	// Сохраняем токен в сессии
 	$_SESSION['token'] = $token;
-        var_dump($_SESSION);
-        echo '<br>';
+ 
 elseif ( isset( $_GET['error'] ) ): // Если при авторизации произошла ошибка
  
     throw new Exception( 'При авторизации произошла ошибка. Error: ' . $_GET['error']
@@ -43,3 +43,4 @@ elseif ( isset( $_GET['error'] ) ): // Если при авторизации п
 	        . '. Error description: ' . $_GET['error_description'] );
 
 endif;
+header('location:index2.php');
