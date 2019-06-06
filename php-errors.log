@@ -1,0 +1,31 @@
+[05-Jun-2019 15:35:13 Europe/Moscow] PHP Notice:  Undefined variable: photoUrlUrl in /var/www/html/vkassist.ru/index2.php on line 7
+[05-Jun-2019 15:35:13 Europe/Moscow] PHP Warning:  fopen(./image/): failed to open stream: Is a directory in /var/www/html/vkassist.ru/vkgroup.php on line 55
+[05-Jun-2019 15:35:13 Europe/Moscow] PHP Warning:  curl_setopt(): supplied argument is not a valid File-Handle resource in /var/www/html/vkassist.ru/vkgroup.php on line 56
+[05-Jun-2019 15:35:13 Europe/Moscow] PHP Warning:  fclose() expects parameter 1 to be resource, boolean given in /var/www/html/vkassist.ru/vkgroup.php on line 60
+[05-Jun-2019 15:35:14 Europe/Moscow] PHP Warning:  unlink(./image/): Is a directory in /var/www/html/vkassist.ru/vkgroup.php on line 65
+[05-Jun-2019 16:07:29 Europe/Moscow] PHP Fatal error:  Uncaught ArgumentCountError: Too few arguments to function savePhotoVk(), 0 passed in /var/www/html/vkassist.ru/index2.php on line 10 and exactly 1 expected in /var/www/html/vkassist.ru/vkgroup.php:36
+Stack trace:
+#0 /var/www/html/vkassist.ru/index2.php(10): savePhotoVk()
+#1 {main}
+  thrown in /var/www/html/vkassist.ru/vkgroup.php on line 36
+[05-Jun-2019 16:42:38 Europe/Moscow] PHP Warning:  fopen(./img/PvkZH2Kef4M.jpg): failed to open stream: No such file or directory in /var/www/html/vkassist.ru/vkgroup.php on line 55
+[05-Jun-2019 16:42:38 Europe/Moscow] PHP Warning:  curl_setopt(): supplied argument is not a valid File-Handle resource in /var/www/html/vkassist.ru/vkgroup.php on line 56
+[05-Jun-2019 16:42:38 Europe/Moscow] PHP Warning:  fclose() expects parameter 1 to be resource, boolean given in /var/www/html/vkassist.ru/vkgroup.php on line 60
+[05-Jun-2019 16:42:38 Europe/Moscow] PHP Warning:  unlink(./img/PvkZH2Kef4M.jpg): No such file or directory in /var/www/html/vkassist.ru/vkgroup.php on line 65
+[05-Jun-2019 16:43:38 Europe/Moscow] PHP Warning:  fopen(./img/PvkZH2Kef4M.jpg): failed to open stream: Permission denied in /var/www/html/vkassist.ru/vkgroup.php on line 55
+[05-Jun-2019 16:43:38 Europe/Moscow] PHP Warning:  curl_setopt(): supplied argument is not a valid File-Handle resource in /var/www/html/vkassist.ru/vkgroup.php on line 56
+[05-Jun-2019 16:43:38 Europe/Moscow] PHP Warning:  fclose() expects parameter 1 to be resource, boolean given in /var/www/html/vkassist.ru/vkgroup.php on line 60
+[05-Jun-2019 16:43:38 Europe/Moscow] PHP Warning:  unlink(./img/PvkZH2Kef4M.jpg): No such file or directory in /var/www/html/vkassist.ru/vkgroup.php on line 65
+[05-Jun-2019 16:57:44 Europe/Moscow] PHP Notice:  Trying to get property 'photo' of non-object in /var/www/html/vkassist.ru/index2.php on line 9
+[05-Jun-2019 17:44:23 Europe/Moscow] PHP Fatal error:  Uncaught Error: Cannot use object of type stdClass as array in /var/www/html/vkassist.ru/index2.php:9
+Stack trace:
+#0 {main}
+  thrown in /var/www/html/vkassist.ru/index2.php on line 9
+[05-Jun-2019 17:45:02 Europe/Moscow] PHP Notice:  Undefined index: owner_id in /var/www/html/vkassist.ru/index2.php on line 9
+[05-Jun-2019 17:45:02 Europe/Moscow] PHP Notice:  Undefined index: id in /var/www/html/vkassist.ru/index2.php on line 10
+[05-Jun-2019 17:46:24 Europe/Moscow] PHP Notice:  Undefined index: owner_id in /var/www/html/vkassist.ru/index2.php on line 9
+[05-Jun-2019 17:46:24 Europe/Moscow] PHP Notice:  Undefined index: id in /var/www/html/vkassist.ru/index2.php on line 10
+[05-Jun-2019 17:47:18 Europe/Moscow] PHP Notice:  Undefined index: owner_id in /var/www/html/vkassist.ru/index2.php on line 9
+[05-Jun-2019 17:47:18 Europe/Moscow] PHP Notice:  Undefined index: id in /var/www/html/vkassist.ru/index2.php on line 10
+[05-Jun-2019 17:48:23 Europe/Moscow] PHP Notice:  Trying to get property 'owner_id' of non-object in /var/www/html/vkassist.ru/index2.php on line 9
+[05-Jun-2019 17:48:23 Europe/Moscow] PHP Notice:  Trying to get property 'id' of non-object in /var/www/html/vkassist.ru/index2.php on line 10
