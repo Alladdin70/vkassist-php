@@ -3,10 +3,21 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+<<<<<<< HEAD
+            <file>file:/C:/Users/Репин.Сергей/Documents/NetBeansProjects/PhpProject2/vkgroup.php</file>
+            <file>file:/C:/Users/Репин.Сергей/Documents/NetBeansProjects/PhpProject2/globals.php</file>
+            <file>file:/C:/Users/Репин.Сергей/Documents/NetBeansProjects/PhpProject2/pictures.php</file>
+            <file>file:/C:/Users/Репин.Сергей/Documents/NetBeansProjects/PhpProject2/index2.php</file>
+            <file>file:/C:/Users/Репин.Сергей/Documents/NetBeansProjects/PhpProject2/oauth.php</file>
+            <file>file:/C:/Users/Репин.Сергей/Documents/NetBeansProjects/PhpProject2/index.php</file>
+            <file>file:/C:/Users/Репин.Сергей/Documents/NetBeansProjects/PhpProject2/index1.php</file>
+            <file>file:/C:/Users/Репин.Сергей/Documents/NetBeansProjects/PhpProject2/Excel5.php</file>
+=======
             <file>file:/home/sergey/NetBeansProjects/vkassist-php/vkgroup.php</file>
             <file>file:/home/sergey/NetBeansProjects/vkassist-php/index2.php</file>
             <file>file:/home/sergey/NetBeansProjects/vkassist-php/oauth.php</file>
             <file>file:/home/sergey/NetBeansProjects/vkassist-php/globals.php</file>
+>>>>>>> a7203c27efe296359eed34180e6879bbf0afe2eb
         </group>
     </open-files>
 </project-private>
