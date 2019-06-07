@@ -63,7 +63,7 @@ endfor;
 echo 'done records - '.$i;
 
 */
-$maximum = 235;
+$maximum = 39;
 $host = '127.0.0.1';
 $db   = 'vkassist';
 $user = 'db';
@@ -82,11 +82,11 @@ $sql = "SELECT * FROM piccity WHERE uid=?;";
 $stm = $pdo->prepare($sql);
 $stm->execute(array($id));
 $picData = $stm->fetch();
-$findStr = $picData->city_eng.'+'.$picData->country_eng;
-$requestStr = 'https://pixabay.com/api/?key=12683849-ab4c8a4c2f15229f7685ee3d7&q=architecture+'.$findStr.'&image_type=photo';
+$findStr = $picData->country_eng;
+$requestStr = 'https://pixabay.com/api/?key=12683849-ab4c8a4c2f15229f7685ee3d7&q=landscape+'.$findStr.'&image_type=photo';
 $response = json_decode(file_get_contents($requestStr));
 $totalHits = $response->totalHits;
-$description = $picData->country_rus.', '.$picData->city_rus;
+$description = $picData->country_rus;
 switch($totalHits):
     case 1:
         $url = $response->hits[0]->largeImageURL;
