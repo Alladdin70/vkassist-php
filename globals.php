@@ -19,7 +19,7 @@ define('CAPITALS',array("Москва","Санкт-Петербург"));
 define('P_MARKER', '?advert=326&sub_id=926016');
 define('PROTOCOL','http:');
 //https://pixabay.com/api/?key=12683849-ab4c8a4c2f15229f7685ee3d7&q=travel+beach&image_type=photo&pretty=true&lang=ru api for pic
-define('GROUP_TOKEN','19836e2c377bd86f0b11ae2abfdfaa9506d2b756dd817fa80e480d3a6e9829a13445118c512141ff1a6b8');
+
 define('VERSION',5.95);
 define('IMAGE_PATH', './img/');
 define('IMAGE_CAT', '/img/');
@@ -30,5 +30,7 @@ define('CLIENT_SECRET','8whzA6PXaNIQO8a4Xg1g');
 define('REDIRECT_URI','https://vkassist.ru/oauth.php');
 define('ADMIN_TOKEN','85d9f02d7371d478726a5b89fadaf1895a91707dbd7369cd01ca5bac13ca5ea3824917ac8a84506668cfd');
 define('GROUP_ID', 137527828);
+
+
 
 
