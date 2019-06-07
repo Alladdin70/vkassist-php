@@ -63,7 +63,7 @@ endfor;
 echo 'done records - '.$i;
 
 */
-$maximum = 592;
+$maximum = 235;
 $host = '127.0.0.1';
 $db   = 'vkassist';
 $user = 'db';
@@ -78,7 +78,7 @@ $opt = [
 $pdo = new PDO($dsn, $user, $pass, $opt);
 $id = rand(1, $maximum);
 
-$sql = "SELECT * FROM picdata WHERE id=?;";
+$sql = "SELECT * FROM piccity WHERE uid=?;";
 $stm = $pdo->prepare($sql);
 $stm->execute(array($id));
 $picData = $stm->fetch();
@@ -86,41 +86,18 @@ $findStr = $picData->city_eng.'+'.$picData->country_eng;
 $requestStr = 'https://pixabay.com/api/?key=12683849-ab4c8a4c2f15229f7685ee3d7&q=architecture+'.$findStr.'&image_type=photo';
 $response = json_decode(file_get_contents($requestStr));
 $totalHits = $response->totalHits;
-if($totalHits ==0):
-    $findStr = 'landscape+'.$picData->country_eng;
-    $requestStr = 'https://pixabay.com/api/?key=12683849-ab4c8a4c2f15229f7685ee3d7&q='.$findStr.'&image_type=photo';
-    $response = json_decode(file_get_contents($requestStr));
-    $totalHits = $response->totalHits;
-    $description = $picData->country_rus;
-else:
-    $description = $picData->country_rus.', '.$picData->city_rus;
-endif;
+$description = $picData->country_rus.', '.$picData->city_rus;
 switch($totalHits):
-    case $totalHits == 1:
-        try{
+    case 1:
         $url = $response->hits[0]->largeImageURL;
-        }
-        catch(Exception $ex){
-            header( 'Refresh:url=' . $_SERVER['PHP_SELF'] );
-        }
         break;
-    case $totalHits > 10:
-        $offset = rand(1,10)-1;
-        try{
-        $url = $response->hits[$offset]->largeImageURL;
-        }
-        catch(Exception $ex){
-            header( 'Refresh:url=' . $_SERVER['PHP_SELF'] );
-        }
+    case $totalHits < 20:
+        $offset = rand(1,$totalHits);
+        $url = $response->hits[$offset-1]->largeImageURL;
         break;
     default:
-        $offset = rand(1,$totalHits)-1;
-        try{
-        $url = $response->hits[$offset]->largeImageURL;
-        }
-        catch(Exception $ex){
-            header( 'Refresh:url=' . $_SERVER['PHP_SELF'] );
-        }
+        $offset = rand(1,20);
+        $url = $response->hits[$offset-1]->largeImageURL;
         break;
 endswitch;
 
@@ -131,4 +108,7 @@ echo '<img src='.$url.'>';
 
 header( 'Refresh:5; url=' . $_SERVER['PHP_SELF'] );
 
+<<<<<<< HEAD
+=======
 //header('location:index.php');
+>>>>>>> a821fe6f12eafaebd020ce89d63d59536d65e37d
