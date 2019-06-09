@@ -108,7 +108,3 @@ echo '<img src='.$url.'>';
 
 header( 'Refresh:5; url=' . $_SERVER['PHP_SELF'] );
 
-<<<<<<< HEAD
-=======
-//header('location:index.php');
->>>>>>> a821fe6f12eafaebd020ce89d63d59536d65e37d
