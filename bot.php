@@ -11,6 +11,7 @@ define('CONFIRMATION_STRING',' 0571d59d');
 define('RESPONSE_SUCCESS','ok');
 define('GROUP_TOKEN','19836e2c377bd86f0b11ae2abfdfaa9506d2b756dd817fa80e480d3a6e9829a13445118c512141ff1a6b8');
 define('MESSAGE_SEND','https://api.vk.com/method/messages.send?');
+define('GET_HISTORY','https://api.vk.com/method/messages.getHistory?');
 define('VERSION',5.95);
 require_once 'keyboard.php';
 
@@ -38,11 +39,14 @@ function dispatchMsg($event){
     if(empty($event->object->payload)):
         $button = 'No button';
         messageSendWOK($event->object->from_id, $button);
+        showCountriesScreen($event->object->from_id);
         return;
     else:
         $button = json_decode($event->object->payload)->button;
     endif;
-    if(intdiv($button,2000)):
+    if(intdiv($button,3000)):
+        excursionsProcess($button,$event);
+    elseif(intdiv($button,2000)):
         citiesProcess($button,$event);
     elseif(intdiv($button,1000)):
         countriesProcess($button, $event);
@@ -51,17 +55,101 @@ function dispatchMsg($event){
 }
 
 function citiesProcess($button, $event){
+  //  $history = messagesGetHistory($event->object->from_id);
+    $country = getCoutnryFromScreen($event);
     $screen = $button - 2990;
     if($screen > 0):
-        showCitiesScreen($event, $screen,'Select city');
+        showCitiesScreen($event,$country, $screen,'Select city');
     elseif(!$screen):
         showCountriesScreen($event->object->from_id);
     else:        
-        showCitiesScreen($event);
+        showTitlesScreen($event->object->from_id,$event->object->text);
     endif;
     return;
 }
 
+function getCoutnryFromScreen($event){
+    $eu = getCountries();
+    foreach(messagesGetHistory($event->object->from_id) as $message):
+        if (in_array($message->text,$eu)):
+            $country = $message->text;
+            break;
+        endif;
+    endforeach;
+    if(empty($country)):
+        return false;
+    else:
+        return $country;
+    endif;
+}
+
+
+function getCityFromScreen($event, $country){
+    $country_id = getCountryID($country);
+    $cities = getCities($country_id);
+    foreach(messagesGetHistory($event->object->from_id) as $message):
+        if (in_array($message->text,$cities)):
+            $city = $message->text;
+            break;
+        endif;
+    endforeach;
+    if(empty($city)):
+        return false;
+    else:
+        return $city;
+    endif;
+}
+
+
+function excursionsProcess($button,$event){
+    $country = getCoutnryFromScreen($event);
+    $city = getCityFromScreen($event, $country);
+    $screen = $button - 3990;
+    if($screen > 0):
+        showTitlesScreen($event->object->from_id,$city, $screen,'Select excursion\'s number');
+    elseif(!$screen):
+        showCitiesScreen($event,$country, 1 ,'Select city');
+    else:        
+        showTitlesScreen($event->object->from_id,$city,1,'Select excursion\'s number');
+    endif;
+    return;
+    
+}
+
+
+
+function showTitlesScreen($uid, $city,$screen=1){
+    $labels = array();
+    $titleIDs = array();
+    $offset = 3000;
+    $city_id = getCityID($city);
+    $titles = getTitles($city_id);
+    for($j = 0; $j < count($titles); $j++):
+        array_push($labels,(string)$j+1);
+        array_push($titleIDs, $j+1);
+    endfor;
+    $titleK = new Keyboard();
+    $titleK->setParam(getParam($screen,$offset,$labels,$titleIDs));
+    $keyboard = $titleK->getKeyboard();
+    messageSendWK($uid,getTitlesList($titles,$screen), $keyboard);
+}
+
+
+
+function getTitlesList($titles,$screen){
+    $message ='';
+    if(empty($titles[0])):
+        return 'No excursions';    
+    endif;
+    $k = ($screen -1)*7;
+    $n = 1;
+    $titlesArray = array_slice($titles, $k, 7);
+    foreach($titlesArray as $title):
+        $message = $message.($k+$n).". ".$title."\n";
+        $n++;
+    endforeach;
+    return $message;
+}
 
 
 function countriesProcess($button, $event){
@@ -72,14 +160,14 @@ function countriesProcess($button, $event){
             $screen = 1;
         endif;
         showCountriesScreen($event->object->from_id, $screen, 'Select country');
-    else:        
-        showCitiesScreen($event);
+    else:
+        showCitiesScreen($event, $event->object->text);
     endif;
     return;
 }
 
-function showCitiesScreen($event, $screen = 1,$text = 'Select city'){
-    $country_id = getCountryID($event->object->text);
+function showCitiesScreen($event,$country, $screen = 1,$text = 'Select city'){
+    $country_id = getCountryID($country);
     $cities = getCities($country_id);
     $citiesID = getCityIDs($country_id);
     $offset = 2000;
@@ -191,6 +279,16 @@ function getColArray($labels){
     endwhile;
     array_push($col,$labels%3);
     return $col;
+}
+
+
+function messagesGetHistory($uid){
+    $param = array(
+        'user_id' =>$uid,
+        'access_token' => GROUP_TOKEN,
+        'v'=> VERSION,
+        'count' => 200);
+    return json_decode(file_get_contents(GET_HISTORY.http_build_query($param)))->response->items;
 }
 
 
@@ -357,4 +455,47 @@ function getCityIDs($country_id){
         array_push($cities, (string)$row->id);
     endwhile;
     return $cities;
+}
+
+function getCityID($city){
+    $host = '127.0.0.1';
+    $db   = 'vkassist';
+    $user = 'db';
+    $pass = 'O7vINQpyW07ctxcd';
+    $charset = 'utf8';
+    $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+    $opt = [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
+        PDO::ATTR_EMULATE_PREPARES   => false,
+    ];
+    $pdo = new PDO($dsn, $user, $pass, $opt);
+    $sql = 'SELECT * FROM cities WHERE city_rus =?;';
+    $stm = $pdo->prepare($sql);
+    $stm ->execute(array($city));
+    return $stm->fetch()->id;
+}
+
+function getTitles($city_id){
+    $titles = array();
+    $host = '127.0.0.1';
+    $db   = 'vkassist';
+    $user = 'db';
+    $pass = 'O7vINQpyW07ctxcd';
+    $charset = 'utf8';
+    $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+    $opt = [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
+        PDO::ATTR_EMULATE_PREPARES   => false,
+    ];
+    $pdo = new PDO($dsn, $user, $pass, $opt);
+    $sql = 'SELECT * FROM sputnik8 WHERE city_id =?;';
+    $stm = $pdo->prepare($sql);
+    $stm ->execute(array($city_id));
+    while($row = $stm->fetch()):
+        $title = (string)$row->title; 
+        array_push($titles, $title);
+    endwhile;
+    return $titles;
 }
