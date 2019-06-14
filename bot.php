@@ -13,6 +13,18 @@ define('GROUP_TOKEN','19836e2c377bd86f0b11ae2abfdfaa9506d2b756dd817fa80e480d3a6e
 define('MESSAGE_SEND','https://api.vk.com/method/messages.send?');
 define('GET_HISTORY','https://api.vk.com/method/messages.getHistory?');
 define('VERSION',5.95);
+define('SELECT_CITY','Выберите город');
+define('SELECT_COUNTRY','Выберите страну ');
+define('SELECT_EXCURSION', 'Выберите номер экскурсии');
+define('EXC_LINK_ATT','Ссылка для выбора этой экскурсии находится в конце поста ');
+define('COUNTRY_OFFSET', 1000);
+define('CITY_OFFSET',2000);
+define('EXCURSIONS_OFFSET',3000);
+define('MAIN_MENU_OFFSET',4000);
+define('CONTROL_OFFSET',990);
+
+
+
 require_once 'keyboard.php';
 
 if(!isset($_REQUEST)):
@@ -37,27 +49,49 @@ function callbackResponse($str){
    
 function dispatchMsg($event){
     if(empty($event->object->payload)):
-        $button = 'No button';
-        messageSendWOK($event->object->from_id, $button);
-        showCountriesScreen($event->object->from_id);
+        getStartKeyboard($event->object->from_id);
         return;
     else:
         $button = json_decode($event->object->payload)->button;
     endif;
-    if(intdiv($button,3000)):
+    if(intdiv($button,MAIN_MENU_OFFSET)):
+        showCountriesScreen($event->object->from_id, $screen = 1, $text = SELECT_COUNTRY);
+    elseif(intdiv($button,EXCURSIONS_OFFSET)):
         excursionsProcess($button,$event);
-    elseif(intdiv($button,2000)):
+    elseif(intdiv($button,CITY_OFFSET)):
         citiesProcess($button,$event);
-    elseif(intdiv($button,1000)):
+    elseif(intdiv($button,COUNTRY_OFFSET)):
         countriesProcess($button, $event);
     endif;
     return;
 }
 
+function getStartKeyboard($uid){
+    $param = array(
+        'row' => 1,
+        'col' => [2],
+        'numbers' => [MAIN_MENU_OFFSET + CONTROL_OFFSET,MAIN_MENU_OFFSET + CONTROL_OFFSET],
+        'labels' => ['Заказ экскурсий','Горячие предложения'],
+        'colors' => [],
+        'one_time' => false,
+        'offset' => MAIN_MENU_OFFSET
+    );
+    $start = new Keyboard();
+    $start->setParam($param);
+    $keyboard = $start->getKeyboard();
+    $message = "Выберите пункт меню";
+    messageSendWK($uid, $message, $keyboard);
+}
+
+
+
+
+
+
 function citiesProcess($button, $event){
   //  $history = messagesGetHistory($event->object->from_id);
     $country = getCoutnryFromScreen($event);
-    $screen = $button - 2990;
+    $screen = $button - (CITY_OFFSET + CONTROL_OFFSET);
     if($screen > 0):
         showCitiesScreen($event,$country, $screen,'Select city');
     elseif(!$screen):
@@ -104,13 +138,16 @@ function getCityFromScreen($event, $country){
 function excursionsProcess($button,$event){
     $country = getCoutnryFromScreen($event);
     $city = getCityFromScreen($event, $country);
-    $screen = $button - 3990;
+    $screen = $button - (EXCURSIONS_OFFSET + CONTROL_OFFSET);
     if($screen > 0):
-        showTitlesScreen($event->object->from_id,$city, $screen,'Select excursion\'s number');
+        showTitlesScreen($event->object->from_id,$city, $screen,SELECT_EXCURSION);
     elseif(!$screen):
         showCitiesScreen($event,$country, 1 ,'Select city');
     else:        
-        showTitlesScreen($event->object->from_id,$city,1,'Select excursion\'s number');
+//        showTitlesScreen($event->object->from_id,$city,1,'Select excursion\'s number');
+        $ids=getExcursionsID(getCityID($city));
+        $id = $ids[$button- EXCURSIONS_OFFSET - 1];
+        showExcursion($id, $event->object->from_id);
     endif;
     return;
     
@@ -118,10 +155,53 @@ function excursionsProcess($button,$event){
 
 
 
+function showExcursion($id,$uid){
+    $exc = getExcursion($id);
+    if(strlen($exc->description) > 500):
+        $descr = mb_substr($exc->description, 0 , 500, "UTF-8");
+    else:
+        $descr = $exc->description;
+    endif;
+    $keyboard = getButtonBack();
+    $message = EXC_LINK_ATT."\n". $exc->price."\n".$descr."...";
+    $attachment = $exc->url;
+    $rid = rand(1, (int)pow(10,32));
+    $param = array(
+        'user_id' =>$uid,
+        'access_token' => GROUP_TOKEN,
+        'random_id' => $rid,
+        'message' => $message,
+        'keyboard' => $keyboard,
+        'attachment' => $attachment,
+        'v'=> VERSION);
+    file_get_contents(MESSAGE_SEND.http_build_query($param));
+    return;
+}
+
+function getButtonBack(){
+    $buttonBack = new Keyboard();
+    $param = array(
+        'row' => 1,
+        'col' => [1],
+        'numbers' => [EXCURSIONS_OFFSET + CONTROL_OFFSET],
+        'labels' => ['Back'],
+        'colors' => [],
+        'one_time' => false,
+        'offset' => EXCURSIONS_OFFSET
+    );
+    $buttonBack->setParam($param);
+    return $buttonBack->getKeyboard();
+}
+
+
+
+
+
+
 function showTitlesScreen($uid, $city,$screen=1){
     $labels = array();
     $titleIDs = array();
-    $offset = 3000;
+    $offset = EXCURSIONS_OFFSET;
     $city_id = getCityID($city);
     $titles = getTitles($city_id);
     for($j = 0; $j < count($titles); $j++):
@@ -153,24 +233,22 @@ function getTitlesList($titles,$screen){
 
 
 function countriesProcess($button, $event){
-    $proc = $button - 1990;
-    if($proc >= 0):
-        $screen = $proc;
-        if(!$proc):
-            $screen = 1;
-        endif;
-        showCountriesScreen($event->object->from_id, $screen, 'Select country');
+    $proc = $button - (COUNTRY_OFFSET + CONTROL_OFFSET);
+    if($proc > 0):
+        showCountriesScreen($event->object->from_id, $screen, SELECT_COUNTRY);
+    elseif($proc ==0):
+        getStartKeyboard($event->object->from_id);       
     else:
         showCitiesScreen($event, $event->object->text);
     endif;
     return;
 }
 
-function showCitiesScreen($event,$country, $screen = 1,$text = 'Select city'){
+function showCitiesScreen($event,$country, $screen = 1,$text = SELECT_CITY){
     $country_id = getCountryID($country);
     $cities = getCities($country_id);
     $citiesID = getCityIDs($country_id);
-    $offset = 2000;
+    $offset = CITY_OFFSET;
     $citiesK = new Keyboard();
     $citiesK->setParam(getParam($screen,$offset,$cities,$citiesID));
     $keyboard = $citiesK->getKeyboard();
@@ -180,10 +258,10 @@ function showCitiesScreen($event,$country, $screen = 1,$text = 'Select city'){
 
 
 
-function showCountriesScreen($uid, $screen = 1, $text = 'Select country'){
+function showCountriesScreen($uid, $screen = 1, $text = SELECT_COUNTRY){
     $eu = getCountries();
     $euid = getCountriesID();
-    $offset = 1000;
+    $offset = COUNTRY_OFFSET;
     $countries = new Keyboard();
     $countries->setParam(getParam($screen, $offset, $eu,$euid));
     $keyboard = $countries->getKeyboard();       
@@ -193,8 +271,8 @@ function showCountriesScreen($uid, $screen = 1, $text = 'Select country'){
 
 
 function getNumbers($screen,$offset,$numbersArray){
-    $prevScreen = $offset + 990 + $screen - 1;
-    $nextScreen = $offset + 990 + $screen + 1;
+    $prevScreen = $offset + CONTROL_OFFSET + $screen - 1;
+    $nextScreen = $offset + CONTROL_OFFSET + $screen + 1;
     $start = ($screen -1)*7;
     $numbers = array_slice($numbersArray, $start, 7);
     foreach($numbers as &$number):
@@ -202,10 +280,10 @@ function getNumbers($screen,$offset,$numbersArray){
     endforeach;
     $last = array_pop($numbers);
     if($screen == 1 && count($numbers) == 6):
-        array_push($numbers,$offset +990);
+        array_push($numbers,$offset + CONTROL_OFFSET);
     elseif($screen == 1 && count($numbers) < 6):
         array_push($numbers,$last);
-        array_push($numbers,$offset +990);
+        array_push($numbers,$offset + CONTROL_OFFSET);
         return $numbers;
     elseif(count($numbers)< 6):
         array_push($numbers,$last);        
@@ -352,7 +430,7 @@ function getCountries(){
         PDO::ATTR_EMULATE_PREPARES   => false,
     ];
     $pdo = new PDO($dsn, $user, $pass, $opt);
-    $sql = 'SELECT * FROM europe ORDER BY country_rus;';
+    $sql = 'SELECT * FROM europe WHERE country_eng IN (SELECT country_slug FROM sputnik8)ORDER BY country_rus;';
     $stm = $pdo->prepare($sql);
     $stm ->execute();
     while($row = $stm->fetch()):
@@ -376,7 +454,7 @@ function getCountriesID(){
         PDO::ATTR_EMULATE_PREPARES   => false,
     ];
     $pdo = new PDO($dsn, $user, $pass, $opt);
-    $sql = 'SELECT * FROM europe ORDER BY country_rus;';
+    $sql = 'SELECT * FROM europe WHERE country_eng IN (SELECT country_slug FROM sputnik8) ORDER BY country_rus;';
     $stm = $pdo->prepare($sql);
     $stm ->execute();
     while($row = $stm->fetch()):
@@ -425,7 +503,7 @@ function getCities($country_id){
         PDO::ATTR_EMULATE_PREPARES   => false,
     ];
     $pdo = new PDO($dsn, $user, $pass, $opt);
-    $sql = 'SELECT * FROM cities WHERE country_id =?;';
+    $sql = 'SELECT * FROM cities WHERE country_id =? AND id IN(SELECT city_id FROM sputnik8);';
     $stm = $pdo->prepare($sql);
     $stm ->execute(array($country_id));
     while($row = $stm->fetch()):
@@ -448,7 +526,7 @@ function getCityIDs($country_id){
         PDO::ATTR_EMULATE_PREPARES   => false,
     ];
     $pdo = new PDO($dsn, $user, $pass, $opt);
-    $sql = 'SELECT * FROM cities WHERE country_id =?;';
+    $sql = 'SELECT * FROM cities WHERE country_id =? AND id IN(SELECT city_id FROM sputnik8);';
     $stm = $pdo->prepare($sql);
     $stm ->execute(array($country_id));
     while($row = $stm->fetch()):
@@ -498,4 +576,63 @@ function getTitles($city_id){
         array_push($titles, $title);
     endwhile;
     return $titles;
+}
+
+function getExcursionsID($city_id){
+    $ids = array();
+    $host = '127.0.0.1';
+    $db   = 'vkassist';
+    $user = 'db';
+    $pass = 'O7vINQpyW07ctxcd';
+    $charset = 'utf8';
+    $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+    $opt = [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
+        PDO::ATTR_EMULATE_PREPARES   => false,
+    ];
+    $pdo = new PDO($dsn, $user, $pass, $opt);
+    $sql = 'SELECT * FROM sputnik8 WHERE city_id =?;';
+    $stm = $pdo->prepare($sql);
+    $stm ->execute(array($city_id));
+    while($row = $stm->fetch()):
+        $id = (string)$row->id; 
+        array_push($ids, $id);
+    endwhile;
+    return $ids;
+}
+
+
+function getExcursion($id){
+    $excursions = array();
+    $host = '127.0.0.1';
+    $db   = 'vkassist';
+    $user = 'db';
+    $pass = 'O7vINQpyW07ctxcd';
+    $charset = 'utf8';
+    $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+    $opt = [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
+        PDO::ATTR_EMULATE_PREPARES   => false,
+    ];
+    $pdo = new PDO($dsn, $user, $pass, $opt);
+    $sql = 'SELECT * FROM sputnik8 WHERE id =?;';
+    $stm = $pdo->prepare($sql);
+    $stm ->execute(array($id));
+    $row = $stm->fetch();
+    $excursion = new Excursion();
+    $excursion->id = $row->id;
+    $excursion->description = $row->description;
+    $excursion->price = $row->netto_price;
+    $excursion->url = $row->url;
+    return $excursion;
+}
+
+
+class Excursion{
+    public $description;
+    public $url;
+    public $price;
+    public $id;            
 }
